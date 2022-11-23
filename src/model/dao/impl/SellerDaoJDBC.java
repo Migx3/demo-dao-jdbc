@@ -41,20 +41,25 @@ public class SellerDaoJDBC implements GenericDao<Seller, Department> {
 
             int rowsAffected = preparedStatement.executeUpdate();
 
-            if (rowsAffected > 0) {
-                ResultSet resultSet = preparedStatement.getGeneratedKeys();
-                if (resultSet.next()) {
-                    int id = resultSet.getInt(1);
-                    obj.setId(id);
-                }
-
-                DB.closeResultSet(resultSet);
-            } else {
+            if (rowsAffected < 1) {
                 throw new DbException("Unexpected error! No rows affected");
             }
-        } catch (SQLException e) {
+
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
+
+            if (!resultSet.next()) {
+                return;
+            }
+
+            int id = resultSet.getInt(1);
+            obj.setId(id);
+
+            DB.closeResultSet(resultSet);
+        }
+        catch (SQLException e) {
             throw new DbException(e.getMessage());
-        } finally {
+        }
+        finally {
             DB.closeStatement(preparedStatement);
         }
     }

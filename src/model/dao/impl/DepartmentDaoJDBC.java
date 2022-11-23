@@ -25,9 +25,9 @@ public class DepartmentDaoJDBC implements GenericDao<Department, Seller> {
         try {
             preparedStatement = connection.prepareStatement(
                     "INSERT INTO department "
-                    +  "(Name) "
-                    +  "VALUES "
-                    +  "(?)",
+                            + "(Name) "
+                            + "VALUES "
+                            + "(?)",
                     Statement.RETURN_GENERATED_KEYS
             );
 
@@ -35,21 +35,24 @@ public class DepartmentDaoJDBC implements GenericDao<Department, Seller> {
 
             int rowsAffected = preparedStatement.executeUpdate();
 
-            if (rowsAffected > 0) {
-                ResultSet resultSet = preparedStatement.getGeneratedKeys();
-
-                if (resultSet.next()) {
-                    int id = resultSet.getInt(1);
-                    obj.setId(id);
-                }
-
-                DB.closeResultSet(resultSet);
-            } else {
+            if (rowsAffected < 1) {
                 throw new DbException("Unexpected error! No rows affected!");
             }
-        } catch (SQLException e) {
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
+
+            if (!resultSet.next()) {
+                return;
+            }
+
+            int id = resultSet.getInt(1);
+            obj.setId(id);
+
+            DB.closeResultSet(resultSet);
+        }
+        catch (SQLException e) {
             throw new DbException(e.getMessage());
-        } finally {
+        }
+        finally {
             DB.closeStatement(preparedStatement);
         }
     }
@@ -62,8 +65,8 @@ public class DepartmentDaoJDBC implements GenericDao<Department, Seller> {
             preparedStatement = connection.prepareStatement(
 
                     "UPDATE department "
-                    +  "SET Name = ? "
-                    +  "WHERE Id = ?"
+                            + "SET Name = ? "
+                            + "WHERE Id = ?"
             );
 
             preparedStatement.setString(1, obj.getName());
@@ -123,9 +126,7 @@ public class DepartmentDaoJDBC implements GenericDao<Department, Seller> {
             }
 
             return null;
-        }
-
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DbException(e.getMessage());
         } finally {
             DB.closeStatement(preparedStatement);
